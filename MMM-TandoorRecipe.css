@@ -1,0 +1,54 @@
+.recipe-header {
+    display: flex;
+    justify-content: space-between;
+}
+.recipe-image {
+    width: 20%;
+}
+.recipe-image img {
+    width: 100%;
+}
+.recipe-step {
+    display: flex;
+    margin-bottom: 5px;
+    background-color: rgb(0 0 0 / 59%);
+    padding: 10px;
+}
+
+.step-rows {
+    text-align: left;
+    width: 200px;
+}
+
+.step-description {
+    padding: 10px;
+    text-align: left;
+    width: 100%;
+}
+
+.step-highlight {
+    background-color: rgb(255 255 255 / 61%);
+    color: black;
+}
+.step-complete{
+    display: none;
+}
+
+.ingredient {
+    display: flex;
+    font-size: small;
+}
+
+.ingredient-food {
+    margin-left: 4px;
+}
+
+.step-title {
+    font-weight: 800;
+}
+
+.recipe-steps {width: 100%;}
+
+div#TANDOOR_RECIPE {
+    width: 100%;
+}

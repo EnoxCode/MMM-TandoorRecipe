@@ -1,226 +1,226 @@
 Module.register("MMM-TandoorRecipe", {
-  defaults: {
-    width: "150%",
-    height: "100%",
-    volume: 100,
-    suspended: false,
-    showOnlyWhileRecipe: false,
-    tandoorHostname: "",
-    tandoorBearerToken: "",
-  },
+    defaults: {
+      width: "150%",
+      height: "100%",
+      volume: 100,
+      suspended: false,
+      showOnlyWhileRecipe: false,
+      tandoorHostname: "",
+      tandoorBearerToken: "",
+    },
+  
+    getStyles: function() {
+      return ["MMM-TandoorRecipe.css"]
+    },
+  
+    start: function() {
+      this.suspended = false
+      this.openRecipe = false
+      this.recipeStep = 1
+  
+    },
+    getCommands: function(commander) {
 
-  getStyles: function() {
-    return ["MMM-TandoorRecipe.css"]
-  },
+    },
+  
+  
+  
+    getDom: function () {
+      var dom = document.createElement("div")
+      dom.id = "TANDOOR"
+      if (this.config.showOnlyWhileRecipe) dom.style.display = "none"
+      dom.style.width = this.config.width
+      dom.style.height = this.config.height
+      return dom
+    },
+  
+    suspend: function () {
+      this.suspended = true
+    },
 
-  start: function() {
-    this.suspended = false
-    this.openRecipe = false
-    this.recipeStep = 1
-
-  },
-  getCommands: function(commander) {
-
-  },
-
-
-
-  getDom: function () {
-    var dom = document.createElement("div")
-    dom.id = "TANDOOR"
-    if (this.config.showOnlyWhileRecipe) dom.style.display = "none"
-    dom.style.width = this.config.width
-    dom.style.height = this.config.height
-    return dom
-  },
-
-  suspend: function () {
-    this.suspended = true
-  },
-
-  resume: function () {
-    this.suspended = false
-  },
-
-  notificationReceived: function (noti, payload) {
-    if (noti == "DOM_OBJECTS_CREATED") {
-      this.prepare()
-    }
-    if (noti == "RECIPE_LOAD") {
-      this.retrieveRecipe(payload)
-      console.log("RECIPE_LOAD", payload);
-    }
-    if (noti == "RECIPE_NEXT_STEP") {
-      this.nextStep()
-    }
-    if (noti == "RECIPE_PREV_STEP") {
-      this.previousStep()
-    } 
-      if (noti == "RECIPE_TIMER") {
-          this.setTimer()
+    resume: function () {
+      this.suspended = false
+    },
+  
+    notificationReceived: function (noti, payload) {
+      if (noti == "DOM_OBJECTS_CREATED") {
+        this.prepare()
       }
-  },
-
-  retrieveRecipe: function(payload) {
-      this.fetchRecipe(payload.id);
-  },
-
-  fetchRecipe: function(id) {
-      fetch(this.config.tandoorHostname+ '/api/recipe/'+id, {
-          headers: {
-              'Authorization': 'Bearer ' + this.config.tandoorBearerToken
-          }
-      })
-      .then(response => response.json())
-      .then(data => {
-          this.showRecipe(data);
-      })
-      .catch(error => {
-          console.error('Error fetching recipe:', error);
-      });
-  },
-
-  nextStep: function() {
-      // Find the current step div and remove the highlight class
-      var currentStepDiv = document.getElementById("step-" + this.recipeStep);
-      if (currentStepDiv) {
-          currentStepDiv.classList.remove("step-highlight");
-          currentStepDiv.classList.add("step-complete");
+      if (noti == "RECIPE_LOAD") {
+        this.retrieveRecipe(payload)
+        console.log("RECIPE_LOAD", payload);
       }
-  
-      // Increase the recipeStep by one
-      this.recipeStep += 1;
-  
-      // Find the next step div and add the highlight class
-      var nextStepDiv = document.getElementById("step-" + this.recipeStep);
-      if (nextStepDiv) {
-          nextStepDiv.classList.add("step-highlight");
+      if (noti == "RECIPE_NEXT_STEP") {
+        this.nextStep()
       }
-  },
+      if (noti == "RECIPE_PREV_STEP") {
+        this.previousStep()
+      } 
+        if (noti == "RECIPE_TIMER") {
+            this.setTimer()
+        }
+    },
 
-  previousStep: function() {
-      // Find the current step div and remove the highlight class
-      var currentStepDiv = document.getElementById("step-" + this.recipeStep);
-      if (currentStepDiv) {
-          currentStepDiv.classList.remove("step-highlight");
-          // currentStepDiv.classList.add("step-complete");
-      }
+    retrieveRecipe: function(payload) {
+        this.fetchRecipe(payload.id);
+    },
   
-      // Decrease the recipeStep by one
-      this.recipeStep = this.recipeStep - 1;
-  
-      // Find the previous step div and add the highlight class
-      var nextStepDiv = document.getElementById("step-" + this.recipeStep);
-      if (nextStepDiv) {
-          nextStepDiv.classList.add("step-highlight");
-          nextStepDiv.classList.remove("step-complete");
-      }
-  },
+    fetchRecipe: function(id) {
+        fetch(this.config.tandoorHostname+ '/api/recipe/'+id, {
+            headers: {
+                'Authorization': 'Bearer ' + this.config.tandoorBearerToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            this.showRecipe(data);
+        })
+        .catch(error => {
+            console.error('Error fetching recipe:', error);
+        });
+    },
 
-  setTimer: function() {
-      let currentStepDiv = document.getElementById("step-" + this.recipeStep);
-      let timer = currentStepDiv.attributes["timer"];
-      let title = currentStepDiv.attributes["title"] || "Step " + this.recipeStep;
-      console.log("Timer: ", timer);
-      this.sendNotification("COOKING_TIMER_ADD", {name: "step-"+this.recipeStep, title: title, timeInSeconds: timer*60});
-  },
+    nextStep: function() {
+        // Find the current step div and remove the highlight class
+        var currentStepDiv = document.getElementById("step-" + this.recipeStep);
+        if (currentStepDiv) {
+            currentStepDiv.classList.remove("step-highlight");
+            currentStepDiv.classList.add("step-complete");
+        }
+    
+        // Increase the recipeStep by one
+        this.recipeStep += 1;
+    
+        // Find the next step div and add the highlight class
+        var nextStepDiv = document.getElementById("step-" + this.recipeStep);
+        if (nextStepDiv) {
+            nextStepDiv.classList.add("step-highlight");
+        }
+    },
 
-  showRecipe: function(recipeData) {
-      this.recipeStep = 1;
-      var dom = document.getElementById("TANDOOR");
-      dom.style.display = "block";
-  
-      // Remove existing recipe elements
-      var existingRecipe = document.getElementById("TANDOOR_RECIPE");
-      if (existingRecipe) {
-          dom.removeChild(existingRecipe);
-      }
-  
-      var recipeContainer = document.createElement("div");
-      recipeContainer.id = "TANDOOR_RECIPE";
-  
-      // Header div
-      var headerDiv = document.createElement("div");
-      headerDiv.className = "recipe-header";
-  
-      // Title div
-      var titleDiv = document.createElement("div");
-      titleDiv.className = "recipe-title";
-      titleDiv.innerText = recipeData.name;
-      headerDiv.appendChild(titleDiv);
-  
-      // Image div
-      var imageDiv = document.createElement("div");
-      imageDiv.className = "recipe-image";
-      var img = document.createElement("img");
-      img.src = recipeData.image;
-      imageDiv.appendChild(img);
-      headerDiv.appendChild(imageDiv);
-  
-      recipeContainer.appendChild(headerDiv);
-  
-      // Steps div
-      var stepsDiv = document.createElement("div");
-      stepsDiv.className = "recipe-steps";
-  
-      recipeData.steps.forEach((step, index) => {
-          // Step container div
-          var stepContainer = document.createElement("div");
-          stepContainer.className = "recipe-step";
-          stepContainer.id = "step-" + (index + 1);
-          stepContainer.attributes["timer"] = step.time;
-          stepContainer.attributes["title"] = step.name;
-          // Add step-highlight class if currentStep is the same as the step index
-          if (this.recipeStep === index + 1) {
-              stepContainer.classList.add("step-highlight");
-          }            
+    previousStep: function() {
+        // Find the current step div and remove the highlight class
+        var currentStepDiv = document.getElementById("step-" + this.recipeStep);
+        if (currentStepDiv) {
+            currentStepDiv.classList.remove("step-highlight");
+            // currentStepDiv.classList.add("step-complete");
+        }
+    
+        // Decrease the recipeStep by one
+        this.recipeStep = this.recipeStep - 1;
+    
+        // Find the previous step div and add the highlight class
+        var nextStepDiv = document.getElementById("step-" + this.recipeStep);
+        if (nextStepDiv) {
+            nextStepDiv.classList.add("step-highlight");
+            nextStepDiv.classList.remove("step-complete");
+        }
+    },
 
-          // row div
-          var columnsDiv = document.createElement("div");
-          columnsDiv.className = "step-rows";
-          
-          // Step title div
-          var stepTitleDiv = document.createElement("div");
-          stepTitleDiv.className = "step-title";
-          stepTitleDiv.innerText = "Step " + (index + 1);
-          columnsDiv.appendChild(stepTitleDiv);
-  
-          // Ingredients div
-          var ingredientsDiv = document.createElement("div");
-          ingredientsDiv.className = "step-ingredients";
-          
-          step.ingredients.forEach(ingredient => {
-              var ingredientDiv = document.createElement("div");
-              ingredientDiv.className = "ingredient";
+    setTimer: function() {
+        let currentStepDiv = document.getElementById("step-" + this.recipeStep);
+        let timer = currentStepDiv.attributes["timer"];
+        let title = currentStepDiv.attributes["title"] || "Step " + this.recipeStep;
+        console.log("Timer: ", timer);
+        this.sendNotification("COOKING_TIMER_ADD", {name: "step-"+this.recipeStep, title: title, timeInSeconds: timer*60});
+    },
 
-              var amountDiv = document.createElement("div");
-              amountDiv.className = "ingredient-amount";
-              amountDiv.innerText = ingredient.amount + " " + ingredient.unit.name;
+    showRecipe: function(recipeData) {
+        this.recipeStep = 1;
+        var dom = document.getElementById("TANDOOR");
+        dom.style.display = "block";
+    
+        // Remove existing recipe elements
+        var existingRecipe = document.getElementById("TANDOOR_RECIPE");
+        if (existingRecipe) {
+            dom.removeChild(existingRecipe);
+        }
+    
+        var recipeContainer = document.createElement("div");
+        recipeContainer.id = "TANDOOR_RECIPE";
+    
+        // Header div
+        var headerDiv = document.createElement("div");
+        headerDiv.className = "recipe-header";
+    
+        // Title div
+        var titleDiv = document.createElement("div");
+        titleDiv.className = "recipe-title";
+        titleDiv.innerText = recipeData.name;
+        headerDiv.appendChild(titleDiv);
+    
+        // Image div
+        var imageDiv = document.createElement("div");
+        imageDiv.className = "recipe-image";
+        var img = document.createElement("img");
+        img.src = recipeData.image;
+        imageDiv.appendChild(img);
+        headerDiv.appendChild(imageDiv);
+    
+        recipeContainer.appendChild(headerDiv);
+    
+        // Steps div
+        var stepsDiv = document.createElement("div");
+        stepsDiv.className = "recipe-steps";
+    
+        recipeData.steps.forEach((step, index) => {
+            // Step container div
+            var stepContainer = document.createElement("div");
+            stepContainer.className = "recipe-step";
+            stepContainer.id = "step-" + (index + 1);
+            stepContainer.attributes["timer"] = step.time;
+            stepContainer.attributes["title"] = step.name;
+            // Add step-highlight class if currentStep is the same as the step index
+            if (this.recipeStep === index + 1) {
+                stepContainer.classList.add("step-highlight");
+            }            
 
-              var foodDiv = document.createElement("div");
-              foodDiv.className = "ingredient-food";
-              foodDiv.innerText = ingredient.food.name;
+            // row div
+            var columnsDiv = document.createElement("div");
+            columnsDiv.className = "step-rows";
+            
+            // Step title div
+            var stepTitleDiv = document.createElement("div");
+            stepTitleDiv.className = "step-title";
+            stepTitleDiv.innerText = "Step " + (index + 1);
+            columnsDiv.appendChild(stepTitleDiv);
+    
+            // Ingredients div
+            var ingredientsDiv = document.createElement("div");
+            ingredientsDiv.className = "step-ingredients";
+            
+            step.ingredients.forEach(ingredient => {
+                var ingredientDiv = document.createElement("div");
+                ingredientDiv.className = "ingredient";
 
-              ingredientDiv.appendChild(amountDiv);
-              ingredientDiv.appendChild(foodDiv);
-              ingredientsDiv.appendChild(ingredientDiv);
-          });
+                var amountDiv = document.createElement("div");
+                amountDiv.className = "ingredient-amount";
+                amountDiv.innerText = ingredient.amount + " " + ingredient.unit.name;
 
-          columnsDiv.appendChild(ingredientsDiv);
-          stepContainer.appendChild(columnsDiv);
+                var foodDiv = document.createElement("div");
+                foodDiv.className = "ingredient-food";
+                foodDiv.innerText = ingredient.food.name;
 
-          // Description div
-          var descriptionDiv = document.createElement("div");
-          descriptionDiv.className = "step-description";
-          descriptionDiv.innerText = step.instruction;
-          stepContainer.appendChild(descriptionDiv);
+                ingredientDiv.appendChild(amountDiv);
+                ingredientDiv.appendChild(foodDiv);
+                ingredientsDiv.appendChild(ingredientDiv);
+            });
 
-          stepsDiv.appendChild(stepContainer);
-      });
-  
-      recipeContainer.appendChild(stepsDiv);
-      dom.appendChild(recipeContainer);
-  },
-  prepare: function() {
-  },
-})
+            columnsDiv.appendChild(ingredientsDiv);
+            stepContainer.appendChild(columnsDiv);
+
+            // Description div
+            var descriptionDiv = document.createElement("div");
+            descriptionDiv.className = "step-description";
+            descriptionDiv.innerText = step.instruction;
+            stepContainer.appendChild(descriptionDiv);
+
+            stepsDiv.appendChild(stepContainer);
+        });
+    
+        recipeContainer.appendChild(stepsDiv);
+        dom.appendChild(recipeContainer);
+    },
+    prepare: function() {
+    },
+  })
